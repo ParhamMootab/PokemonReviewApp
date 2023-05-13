@@ -46,12 +46,12 @@ namespace PokemonReviewApp.Controllers
             return Ok(country);
         }
 
-        [HttpGet("/owner/{ownerId}")]
+        [HttpGet("/owner/{countryId}")]
         [ProducesResponseType(200, Type = typeof(Country))]
         [ProducesResponseType(400)]
-        public IActionResult GetCountryOfAnOwner(int ownerId)
+        public IActionResult GetCountryOfAnOwner(int countryId)
         {
-            var country = mapper.Map<CountryDTO>(countryRepository.GetCountryByOwnerId(ownerId));
+            var country = mapper.Map<CountryDTO>(countryRepository.GetCountryByOwnerId(countryId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
