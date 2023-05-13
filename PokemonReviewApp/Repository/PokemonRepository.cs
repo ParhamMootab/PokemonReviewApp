@@ -17,12 +17,12 @@ namespace PokemonReviewApp.Repository
             return _context.Pokemons.OrderBy(p => p.Id).ToList();
         }
 
-        Pokemon IPokemonRepository.GetPokemon(int id)
+        public Pokemon GetPokemon(int id)
         {
             return _context.Pokemons.Where(p => p.Id == id).FirstOrDefault();
         }
 
-        Pokemon IPokemonRepository.GetPokemon(string name)
+        public Pokemon GetPokemon(string name)
         {
             return _context.Pokemons.Where(p => p.Name == name).FirstOrDefault();
         }
