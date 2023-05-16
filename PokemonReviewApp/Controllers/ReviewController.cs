@@ -12,11 +12,16 @@ namespace PokemonReviewApp.Controllers
     {
         private readonly IReviewRepository reviewRepository;
         private readonly IMapper mapper;
+        private readonly IPokemonRepository pokemonRepository;
+        private readonly IReviewerRepository reviewerRepository;
 
-        public ReviewController(IReviewRepository reviewRepository, IMapper mapper)
+        public ReviewController(IReviewRepository reviewRepository, IMapper mapper, 
+            IPokemonRepository pokemonRepository, IReviewerRepository reviewerRepository)
         {
             this.reviewRepository = reviewRepository;
             this.mapper = mapper;
+            this.pokemonRepository = pokemonRepository;
+            this.reviewerRepository = reviewerRepository;
         }
 
         [HttpGet]
@@ -57,6 +62,47 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
 
             return Ok(reviews);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateReview([FromQuery] int pokemonId, [FromQuery] int reviewerId, 
+            [FromBody] ReviewDTO reviewCreate)
+        {
+            if (reviewCreate == null)
+                BadRequest(ModelState);
+
+            var reviews = reviewRepository.GetAllReviews()
+                .Where(r => r.Title.Trim().ToUpper() == reviewCreate.Title.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (reviews != null)
+            {
+                ModelState.AddModelError("", "Review already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var reviewMap = mapper.Map<Review>(reviewCreate);
+
+            // To be reviewed: Tutorial put the object creation in repository for Pokemon
+            reviewMap.Pokemon = pokemonRepository.GetPokemon(pokemonId);
+            reviewMap.Reviewer = reviewerRepository.GetReviewer(reviewerId);
+
+
+
+            if (!reviewRepository.CreateReview(reviewMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created!");
+
+
         }
 
 
